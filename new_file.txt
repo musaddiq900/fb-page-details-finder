@@ -1,0 +1,108 @@
+import customtkinter as ctk
+from datetime import date
+import fb_link_filter
+import page_scroller
+import string_1
+
+
+class AutoCompleteEntry(ctk.CTkFrame):
+    def __init__(self, master, options_list, **kwargs):
+        super().__init__(master)
+        self.options_list = options_list
+        self.filtered_list = options_list
+
+        # Create CTkEntry
+        self.entry = ctk.CTkEntry(self, **kwargs)
+        self.entry.pack(fill="x", padx=5, pady=5)
+        self.entry.bind("<KeyRelease>", self.on_key_release)
+
+        # Create a Listbox for dropdown suggestions
+        self.listbox = ctk.CTkScrollableFrame(self, height=150)
+        self.listbox_visible = False
+
+    def on_key_release(self, event):
+        query = self.entry.get().lower()
+        self.filtered_list = [item for item in self.options_list if query in item.lower()]
+
+        if self.filtered_list and query:
+            self.show_dropdown()
+        else:
+            self.hide_dropdown()
+
+    def show_dropdown(self):
+        if not self.listbox_visible:
+            self.listbox.pack(fill="both", padx=5, pady=2)
+            self.listbox_visible = True
+
+        # Clear previous content
+        for widget in self.listbox.winfo_children():
+            widget.destroy()
+
+        # Add filtered options to the dropdown
+        for option in self.filtered_list:
+            btn = ctk.CTkButton(self.listbox, text=option, height=30, corner_radius=0, fg_color="transparent",
+                                command=lambda opt=option: self.set_entry(opt))
+            btn.pack(fill="x", padx=2, pady=1)
+
+    def hide_dropdown(self):
+        if self.listbox_visible:
+            self.listbox.pack_forget()
+            self.listbox_visible = False
+
+    def set_entry(self, value):
+        self.entry.delete(0, "end")
+        self.entry.insert(0, value)
+        self.hide_dropdown()
+
+    def get_value(self):
+        return self.entry.get()
+    
+def validate_numeric_input(value):
+    return value.isdigit() or value == ""
+# Main Application
+if __name__ == "__main__":
+    ctk.set_appearance_mode("dark")
+    app = ctk.CTk()
+    app.geometry("400x400")
+    app.title("Facebook Leads By M.J IT")
+    
+    validate_command = app.register(validate_numeric_input)
+    # AutoCompleteEntry Widget
+    ctk.Label = ctk.CTkLabel
+    ctk.Label(app, text="Options Entry:").pack(padx=10, pady=(10, 0), anchor="w")
+    auto_entry = AutoCompleteEntry(app, options_list=string_1.countries)
+    auto_entry.pack(padx=20, pady=5, fill="x")
+
+    # Keyword Entry
+    ctk.Label(app, text="Keyword Entry:").pack(padx=10, pady=(10, 0), anchor="w")
+    keyword_entry = ctk.CTkEntry(app, placeholder_text="Enter keyword here")
+    keyword_entry.pack(padx=20, pady=5, fill="x")
+    ctk.Label(app, text="Enter Number of scroll:").pack(padx=10, pady=(10, 0), anchor="w")
+    number_entry = ctk.CTkEntry(app, placeholder_text="Enter Number of scroll",validate="key",validatecommand=(validate_command, "%P") )
+    number_entry.pack(padx=20, pady=5, fill="x")
+    # Check Button
+    check_var = ctk.BooleanVar(value=False)
+    check_button = ctk.CTkCheckBox(app, text="Enable Feature", variable=check_var)
+    check_button.pack(pady=10)
+
+    # Function to get and print values
+    def get_values():
+        current_date = date.today()
+        options_value = auto_entry.get_value()
+        keyword_value = keyword_entry.get()
+        scroll_number = number_entry.get()
+        check_value = check_var.get()
+        code_2 = string_1.country_dict[options_value]
+        url = f"https://www.facebook.com/ads/library/?active_status=active&ad_type=all&country={code_2}&is_targeted_country=false&media_type=all&q={keyword_value}&search_type=keyword_unordered"
+        page_scroller.main(url,scroll_number)
+        print("Options Entry:", options_value)
+        print("Keyword Entry:", keyword_value)
+        file_name = f"{options_value}_{keyword_value}-{current_date.strftime(f"%m-%d")}.xlsx"
+        fb_link_filter.main(file_name)
+        print("Check Button State:", "Enabled" if check_value else "Disabled")
+
+    # Submit Button
+    submit_button = ctk.CTkButton(app, text="Get Values", command=get_values)
+    submit_button.pack(pady=20)
+
+    app.mainloop()
