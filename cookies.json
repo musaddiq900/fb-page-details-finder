@@ -1,0 +1,19 @@
+[
+    {
+        "name": "c_user",
+        "value": "your_c_user_value",
+        "domain": ".facebook.com",
+        "path": "/",
+        "secure": true,
+        "httpOnly": true
+    },
+    {
+        "name": "xs",
+        "value": "your_xs_value",
+        "domain": ".facebook.com",
+        "path": "/",
+        "secure": true,
+        "httpOnly": true
+    }
+  
+]
